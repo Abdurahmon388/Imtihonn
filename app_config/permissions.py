@@ -27,6 +27,38 @@ class AdminOrOwner(BasePermission):
         # Foydalanuvchi o‘zining obyektini tahrirlashiga ruxsat
         return obj.owner == request.user
 
+class IsAdminOrOwner(BasePermission):
+    """
+    Faqat admin yoki o‘ziga tegishli ob'ektga ruxsat berish.
+    """
+    def has_object_permission(self, request, view, obj):
+        return bool(request.user and (request.user.is_staff or obj.owner == request.user))
+
+
+class IsAdminUser(BasePermission):
+    """
+    Faqat admin foydalanuvchilarga ruxsat beradi.
+    """
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_staff)
+
+class IsAuthenticated(BasePermission):
+    """
+    Faqat ro‘yxatdan o‘tgan foydalanuvchilarga ruxsat beradi.
+    """
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_authenticated)
+
+class IsOwnerOrReadOnly(BasePermission):
+    """
+    Ob'ektning egasiga o‘zgartirish va o‘chirishga ruxsat beradi, 
+    boshqalarga faqat o‘qish huquqini beradi.
+    """
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return obj.owner == request.user
+
 class IsAdminOrReadOnly(BasePermission):
     """
     Agar foydalanuvchi admin bo‘lsa, barcha ruxsat beriladi.
@@ -45,15 +77,6 @@ class IsAuthenticatedUser(permissions.BasePermission):
         return request.user and request.user.is_authenticated
 
 
-class IsOwnerOrReadOnly(permissions.BasePermission):
-    """
-    Agar foydalanuvchi o‘z ma’lumotlariga kirmoqchi bo‘lsa, ruxsat beriladi.
-    Boshqalar faqat o‘qish huquqiga ega bo‘ladi.
-    """
-    def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return obj == request.user
 
 
 class AllowAny(permissions.BasePermission):

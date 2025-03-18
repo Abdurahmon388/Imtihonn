@@ -18,12 +18,18 @@ from .serializers import GetTeachersByIdsSerializer
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 from .serializers import UserAndStudentSerializer
-from .serializers import TeacherSerializer
 from .permissions import AdminUser, AdminOrOwner
 from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from faker import Faker
 import random
+from django.db.models import Count, Q, Sum
+from django.utils.timezone import make_aware
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAdminUser
 from django.core.management import call_command
 
 fake = Faker()
@@ -75,6 +81,15 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = UserAllSerializer(users, many=True)
         return Response(serializer.data)
     
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAdminUser
+
+class AdminOnlyView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        return Response({"message": "Siz admin foydalanuvchisiz!"})
 
 class SomeProtectedView(APIView):
     permission_classes = [AdminOrOwner]
@@ -107,13 +122,7 @@ class UserDetailView(generics.RetrieveAPIView):
     permission_classes = [AdminUser]
 from datetime import datetime
 
-from django.db.models import Count, Q, Sum
-from django.utils.timezone import make_aware
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAdminUser
+
 
 class StudentFilterView(APIView):
     permission_classes = [IsAdminUser]
@@ -131,9 +140,10 @@ class StudentFilterView(APIView):
         end_date = make_aware(datetime.combine(end_date, datetime.max.time()))
 
         total_students = Student.objects.count()
-        graduated_students = Student.objects.filter(group__active=False, created_at__range=[start_date, end_date]).count()
-        studying_students = Student.objects.filter(group__active=True, created_at__range=[start_date, end_date]).count()
-        registered_students = Student.objects.filter(created_at__range=[start_date, end_date]).count()
+        graduated_students = Student.objects.filter(group__is_active=False, created__range=[start_date, end_date]).count()
+        studying_students = Student.objects.filter(group__is_active=True, created__range=[start_date, end_date]).count()
+
+        registered_students = Student.objects.filter(created__range=[start_date, end_date]).count()
 
         return Response({
             "total_students": total_students,

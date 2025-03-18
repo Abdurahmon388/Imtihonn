@@ -314,6 +314,10 @@ class TeacherDepartments(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
     department = models.ForeignKey(Departments, on_delete=models.CASCADE)
 
+class StudentStatistic(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True) 
 
 class Subject(models.Model):
     title = models.CharField(max_length=50, verbose_name="Nomi")  

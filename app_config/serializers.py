@@ -11,7 +11,6 @@ from rest_framework.fields import DateField
 from rest_framework.serializers import Serializer
 
 
-
 User = get_user_model()
 
 # --- Authentication Serializers ---
@@ -27,6 +26,9 @@ class TokenObtainPairResponseSerializer(serializers.Serializer):
         raise NotImplementedError()
     
 
+class DateFilterSerializer(Serializer):
+    start_date = DateField(required=True)
+    end_date = DateField(required=True)
 
 class TokenRefreshResponseSerializer(serializers.Serializer):
     access = serializers.CharField()
@@ -339,7 +341,3 @@ class StatusSerializer(serializers.ModelSerializer):
         model = Status
         fields = "__all__"
         
-
-class DateFilterSerializer(Serializer):
-    start_date = DateField(required=True)
-    end_date = DateField(required=True)
